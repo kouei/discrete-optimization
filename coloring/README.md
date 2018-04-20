@@ -12,6 +12,8 @@ To run the program you need to compile `main.cpp`, here I use clang as my compil
 
 This will generate executable file `main`, then you can run `submit.py` to submit the result
 
+`$ python submit.py`
+
 ## Optimization Strategy
 
 * Local Search
