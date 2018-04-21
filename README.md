@@ -6,4 +6,5 @@ My solutions for the assignments of the Coursera course [Discrete Optimization](
 ## Content
 | Assignment          | Folder          |
 | :------------------ |:----------------|
+| Knapsack            | knapsack        |
 | Graph Coloring      | coloring        |
