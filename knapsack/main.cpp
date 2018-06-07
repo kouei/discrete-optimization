@@ -12,16 +12,16 @@ struct Item
 	int weight;
 
 	// high value density item will come first
-	bool operator < (const Item & rhs) const
+	bool operator < (Item rhs) const
 	{
-		return static_cast<float>(value) / weight > static_cast<float>(rhs.value) / rhs.weight;
+		return static_cast<double>(value) / weight > static_cast<double>(rhs.value) / rhs.weight;
 	}
 };
 
 // get the max value expectation from current capacity and current undecided item
-float get_expectation(const vector<Item> & items, int capacity, int start)
+double get_expectation(const vector<Item> & items, int capacity, int start)
 {
-	auto expectation = 0.0f;
+	auto expectation = 0.0;
 	for(auto i = start; i < items.size(); ++i)
 	{
 		auto item = items[i];
@@ -34,7 +34,7 @@ float get_expectation(const vector<Item> & items, int capacity, int start)
 		// and add the same fraction of its value to the expectation
 		else
 		{
-			expectation += static_cast<float>(item.value) * capacity / item.weight;
+			expectation += static_cast<double>(item.value) * capacity / item.weight;
 			break;
 		}
 	}
@@ -43,9 +43,9 @@ float get_expectation(const vector<Item> & items, int capacity, int start)
 }
 
 // find max value and the take/no-take choice for each item
-pair<int, vector<int>> search(const vector<Item> & items,  int capacity)
+tuple<int, vector<int>> search(const vector<Item> & items,  int capacity)
 {
-	auto max_value = 0.0f;
+	auto max_value = 0.0;
 	auto max_taken = vector<int>(items.size(), 0);
 
 	// to prevent from stack-overflow, instead of using plain recursion here I maintain the stack myself
@@ -56,13 +56,13 @@ pair<int, vector<int>> search(const vector<Item> & items,  int capacity)
 	// taken:         current take/no-take choice of each item
 	// pos:           next item to consider
 
-	auto start_value = 0.0f;
+	auto start_value = 0.0;
 	auto start_capacity = capacity;
 	auto start_expectation = get_expectation(items, capacity, 0);
 	auto start_taken = vector<int>(items.size(), 0);
 	auto start_pos = 0;
 
-	using StackElem = tuple<float, int, float, vector<int>, int>;
+	using StackElem = tuple<double, int, double, vector<int>, int>;
 	vector<StackElem> stack;
 	stack.push_back(make_tuple(start_value, start_capacity, start_expectation, start_taken, start_pos));
 	while(!stack.empty())
@@ -111,27 +111,35 @@ pair<int, vector<int>> search(const vector<Item> & items,  int capacity)
         
         stack.push_back(make_tuple(take_value, take_capacity, take_expectation, take_taken, cur_pos + 1));
 	}
-	return make_pair(max_value, max_taken);
+	return make_tuple(max_value, max_taken);
 }
 
 // print the content of a vector
-void print_vec(const vector<int> & vec)
+void print_vec(const vector<int> & vec, FILE * f = nullptr)
 {
-	for(auto i = 0; i < vec.size(); ++i)
+	if(f)
 	{
-		printf("%d", vec[i]);
-		if(i + 1 == vec.size()) printf("\n");
-		else printf(" ");
+		for(auto i = 0; i < vec.size(); ++i)
+		{
+			fprintf(f, "%d", vec[i]);
+			if(i + 1 == vec.size()) fprintf(f, "\n");
+			else fprintf(f, " ");
+		}
+	}
+	else
+	{
+		for(auto i = 0; i < vec.size(); ++i)
+		{
+			printf("%d", vec[i]);
+			if(i + 1 == vec.size()) printf("\n");
+			else printf(" ");
+		}
 	}
 }
 
-int main(int argc, char * argv[])
+tuple<vector<Item>, int> load_item(const char * filename)
 {
-	// you can change this line to try different input
-	// but when submiting, makesure you are reading from python_input.txt
-	auto f = fopen("python_input.txt", "r");
-	//auto f = fopen("data/ks_4_0", "r");
-	//auto f = fopen("data/ks_200_0", "r");
+	auto f = fopen(filename, "r");
 	assert(f);
 
 	int item_count, capacity;
@@ -148,28 +156,48 @@ int main(int argc, char * argv[])
 
 	fclose(f);
 
+	return make_tuple(items, capacity);
+}
+
+void save_item(const char * filename, int value, const vector<int> & taken)
+{
+	// write result to cpp_output.txt, so that solver.py can read result from it
+	auto f = fopen(filename, "w");
+	assert(f);
+
+	fprintf(f, "%d\n", value);
+	print_vec(taken, f);
+	fclose(f);
+}
+
+int main(int argc, char * argv[])
+{
+	// you can change this line to try different input
+	// but when submiting, makesure you are reading from python_input.txt
+	
+	 auto init = load_item("cpp_input.txt");
+	// auto init = load_item("data/ks_30_0");
+	// auto init = load_item("data/ks_50_0");
+	// auto init = load_item("data/ks_200_0");
+	// auto init = load_item("data/ks_400_0");
+	// auto init = load_item("data/ks_1000_0");
+	//auto init = load_item("data/ks_10000_0");
+
+	auto items = get<0>(init);
+	auto capacity = get<1>(init);
+
 	// sort the items, so that they are in value density decreasing order
 	sort(items.begin(), items.end());
 
 	auto result = search(items, capacity);
-	auto value = result.first;
-	auto taken = result.second;
+	auto value = get<0>(result);
+	auto taken = get<1>(result);
 
 	printf("maximum value %d\n", value);
 	printf("taken vector:\n");
 	print_vec(taken);
 
-	// write result to cpp_output.txt, so that solver.py can read result from it
-	auto ff = fopen("cpp_output.txt", "w");
-	assert(ff);
+	save_item("cpp_output.txt", value, taken);
 
-	fprintf(ff, "%d\n", value);
-	for(auto i = 0; i < taken.size(); ++i)
-	{
-		fprintf(ff, "%d", taken[i]);
-		if(i + 1 == taken.size()) fprintf(ff, "\n");
-		else fprintf(ff, " ");
-	}
-	fclose(ff);
 	return 0;
 }

@@ -10,7 +10,7 @@ Item = namedtuple("Item", ['index', 'value', 'weight'])
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
     
-    with open('python_input.txt', mode='w') as f:
+    with open('cpp_input.txt', mode='w') as f:
         for line in input_data:
             f.write(line)
             

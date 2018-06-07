@@ -1,44 +1,56 @@
 #include <cstdio>
 #include <cassert>
-#include <utility>
 #include <vector>
 #include <limits>
 #include <random>
-#include <ctime>
 #include <unordered_set>
 #include <queue>
 
 using namespace std;
 
+using Connection = vector<vector<int>>;
 
 // print color choice for every node
-void print_color(const vector<int> & color)
+void print_vec(const vector<int> & color, FILE * f = nullptr)
 {
-	for(size_t i = 0; i < color.size(); ++i)
+	if(f)
 	{
-		printf("%d", color[i]);
-		if(i + 1 == color.size()) printf("\n");
-		else printf(" ");
+		for(auto i = 0; i < color.size(); ++i)
+		{
+			fprintf(f, "%d", color[i]);
+			if(i + 1 == color.size()) fprintf(f, "\n");
+			else fprintf(f, " ");
+		}
 	}
-	printf("\n");
+	else
+	{
+		for(auto i = 0; i < color.size(); ++i)
+		{
+			printf("%d", color[i]);
+			if(i + 1 == color.size()) printf("\n");
+			else printf(" ");
+		}
+		printf("\n");
+	}
 }
 
 // print neighbor connection of every node
-void print_connection(const vector<vector<int>> & connection)
+void print_connection(const Connection & connection)
 {
 	for(auto & vec : connection)
 	{
-		print_color(vec);
+		print_vec(vec);
 	}
 }
 
 // random sample from a vector
-int random_sample(const vector<int> & vec)
+template<typename T>
+T random_sample(const vector<T> & vec)
 {
 	assert(!vec.empty());
 
 	static default_random_engine generator(time(nullptr));
-	uniform_int_distribution<int> distribution(0, vec.size() - 1);
+	uniform_int_distribution<size_t> distribution(0, vec.size() - 1);
 	auto random_index = distribution(generator);
 
 	return vec[random_index];
@@ -55,19 +67,50 @@ int random_sample(int start, int end)
 	return distribution(generator);
 }
 
-// select next node to change color
-int select_next_node(const vector<int> & violation, const vector<int> & color, unordered_set<int> & tabu_hash)
+struct Tabu
 {
-	auto max_violation = -1;
+	Tabu(int _tabu_size) : tabu_size(_tabu_size) {}
+
+	bool is_find(int node) const
+	{
+		return tabu_hash.find(node) != tabu_hash.end();
+	}
+
+	void push(int node)
+	{
+		if(is_find(node)) return;
+
+		tabu_hash.insert(node);
+		tabu_queue.push(node);
+
+		if(tabu_hash.size() > tabu_size) pop();
+	}
+
+	void pop()
+	{
+		auto top = tabu_queue.front();
+		tabu_queue.pop();
+		tabu_hash.erase(top);
+	}
+
+	unordered_set<int> tabu_hash;
+	queue<int> tabu_queue;
+	int tabu_size;
+};
+
+// select next node to change color
+int select_next_node(const vector<int> & violation, const vector<int> & color, const Tabu & tabu)
+{
+	auto max_violation = (numeric_limits<int>::min)();
 	vector<int> max_violation_node;
 
-	for (size_t cur_node = 0; cur_node < violation.size(); ++cur_node)
+	for (auto cur_node = 0; cur_node < violation.size(); ++cur_node)
 	{
 		// skip nodes with no violation
 		if(violation[cur_node] == 0) continue;
 
 		// skip nodes in tabu list
-		if(tabu_hash.find(cur_node) != tabu_hash.end()) continue;
+		if(tabu.is_find(cur_node)) continue;
 
 		// if violation is max violation, add the node to candidate list
 		if (max_violation == violation[cur_node])
@@ -83,7 +126,7 @@ int select_next_node(const vector<int> & violation, const vector<int> & color, u
 		}
 	}
 
-	if(max_violation == -1) return -1;
+	if(max_violation_node.empty()) return -1;
 
 	// random sample a node from candidate list
 	return random_sample(max_violation_node);
@@ -91,7 +134,8 @@ int select_next_node(const vector<int> & violation, const vector<int> & color, u
 
 
 // change the color of a node
-void change_color(int node, const vector<int> & node_neighbor, vector<int> & color, int total_color_count, vector<int> & violation, int & total_violation)
+void change_color(int node, const vector<int> & node_neighbor, vector<int> & color, int total_color_count, 
+					vector<int> & violation, int & total_violation)
 {
 	// count the color distribution of neighbor nodes
 	vector<int> color_count(total_color_count, 0);
@@ -110,16 +154,16 @@ void change_color(int node, const vector<int> & node_neighbor, vector<int> & col
 		// skip its own color
 		if(cur_color == color[node]) continue;
 
-		// if the color violation is the min color violation, add the color to candidate list
-		if(min_color_count == color_count[cur_color])
-		{
-			min_color.push_back(cur_color);
-		}
 		// if the color violation is smaller than the min color violation, clear the candidate list and add the color to it
-		else if (min_color_count > color_count[cur_color])
+		if (min_color_count > color_count[cur_color])
 		{
 			min_color_count = color_count[cur_color];
 			min_color.clear();
+			min_color.push_back(cur_color);
+		}
+		// if the color violation is the min color violation, add the color to candidate list
+		else if(min_color_count == color_count[cur_color])
+		{
 			min_color.push_back(cur_color);
 		}
 	}
@@ -152,7 +196,7 @@ void change_color(int node, const vector<int> & node_neighbor, vector<int> & col
 }
 
 // reinitialize color choice for every node
-vector<int> reinitialize_color(const vector<int> & color, int total_color_count)
+vector<int> init_color(const vector<int> & color, int total_color_count)
 {
 	vector<int> new_color(color.size());
 	for(auto & c : new_color)
@@ -165,11 +209,11 @@ vector<int> reinitialize_color(const vector<int> & color, int total_color_count)
 
 
 // count violation for every node and count total violation
-pair<vector<int>, int> init_violation(const vector<vector<int>> & connection, const vector<int> & color)
+tuple<vector<int>, int> init_violation(const vector<vector<int>> & connection, const vector<int> & color)
 {
 	vector<int> violation;
 	int total_violation = 0;
-	for (size_t cur_node = 0; cur_node < connection.size(); ++cur_node)
+	for (auto cur_node = 0; cur_node < connection.size(); ++cur_node)
 	{
 		auto cur_violation = 0;
 		for (auto neighbor : connection[cur_node])
@@ -180,66 +224,47 @@ pair<vector<int>, int> init_violation(const vector<vector<int>> & connection, co
 		total_violation += cur_violation;
 	}
 
-	return make_pair(violation, total_violation);
+	return make_tuple(violation, total_violation);
 }
 
 // check feasibility of current number of color
-pair<bool, int> is_feasible(const vector<vector<int>> & connection, vector<int> & color, int total_color_count, int tabu_limit)
+tuple<bool, int> is_feasible(const vector<vector<int>> & connection, vector<int> & color, int total_color_count, int tabu_size)
 {
 	// maximum step to try
 	// one step means change the color of a node
-	auto STEP_LIMIT = 50000;
+	auto step_limit = 50000;
 	auto step_count = 0;
 
 	auto violation_and_total_violation = init_violation(connection, color);
-	auto violation = violation_and_total_violation.first;
-	auto total_violation = violation_and_total_violation.second;
+	auto violation = get<0>(violation_and_total_violation);
+	auto total_violation = get<1>(violation_and_total_violation);
 
 	// tabu hash table and tabu queue, they contain same data
 	// use hash table to accelerate retrieval, use queue to make the tabu list FIFO (First In First Out)
-	unordered_set<int> tabu_hash;
-	queue<int> tabu_queue;
+	auto tabu = Tabu(tabu_size);
 
-	while (true)
+	while (step_count < step_limit && total_violation > 0)
 	{
-		// if no violation, then current setting is feasible
-		if(total_violation == 0)
-		{
-			return make_pair(true, step_count);
-		}
-
 		// select next node to change color
-		auto node = select_next_node(violation, color, tabu_hash);
+		auto node = select_next_node(violation, color, tabu);
 
 		// if cannot select next node, maybe the tabu list is too long, then pop one element from the tabu list
-		if(node == -1)
+		while(node == -1)
 		{
-			auto to_pop = tabu_queue.front();
-			tabu_hash.erase(to_pop);
-			tabu_queue.pop();
-			continue;
+			tabu.pop();
+			node = select_next_node(violation, color, tabu);
 		}
 		
 		// add the selected node to tabu list
-		tabu_hash.insert(node);
-		tabu_queue.push(node);
-		// if the tabu list exceeds the limit, pop one element out
-		if(tabu_hash.size() > tabu_limit)
-		{
-			auto to_pop = tabu_queue.front();
-			tabu_hash.erase(to_pop);
-			tabu_queue.pop();
-		}
+		tabu.push(node);
 
 		// change color of the selected code
 		change_color(node, connection[node], color, total_color_count, violation, total_violation);
 		
-		// increase step, if exceeds limit then stop searching
 		++step_count;
-		if(step_count >= STEP_LIMIT) break;
 	}
 
-	return make_pair(false, step_count);
+	return make_tuple(total_violation == 0, step_count);
 }
 
 
@@ -270,18 +295,28 @@ vector<int> remove_color(const vector<int> & color, int total_color_count)
 }
 
 
+void save_connection(const char * filename, int feasible_color_count, const vector<int> & feasible_color)
+{
+	// write the output to cpp_output.txt
+	// the solver.py will read result from this file
+	auto f = fopen(filename, "w");
+	fprintf(f, "%d\n", feasible_color_count);
+	print_vec(feasible_color, f);
+	fclose(f);
+}
+
 
 // search the minimum color for a graph
 // return the color choice of every node and the total number of color
-pair<vector<int>, int> search(const vector<vector<int>> & connection)
+tuple<vector<int>, int> search(const Connection & connection)
 {
-	vector<int> color(connection.size());
+	auto color = vector<int>(connection.size());
 	auto total_color_count = static_cast<int>(color.size());
 
-	color = reinitialize_color(color, total_color_count);
+	color = init_color(color, total_color_count);
 
 	// set the length of tabu list to 1/10 of the number of nodes
-	auto tabu_limit = max<int>(connection.size() / 10, 1);
+	auto tabu_limit = connection.size() / 10;
 
 	vector<int> feasible_color{-1};
 	auto feasible_color_count = -1;
@@ -289,13 +324,13 @@ pair<vector<int>, int> search(const vector<vector<int>> & connection)
 	for(auto cur_color_count = total_color_count; cur_color_count > 0; --cur_color_count)
 	{
 		// times to retry if did not find feasible solution in a given number of steps.
-		auto RETRY_LIMIT = 100;
+		auto retry_limit = 100;
 		auto retry_count = 0;
 		while(true)
 		{
-			auto feasible_and_step_count = is_feasible(connection, color, cur_color_count, tabu_limit);
-			auto feasible = feasible_and_step_count.first;
-			auto step_count = feasible_and_step_count.second;
+			auto result = is_feasible(connection, color, cur_color_count, tabu_limit);
+			auto feasible = get<0>(result);
+			auto step_count = get<1>(result);
 
 			if(feasible)
 			{
@@ -303,12 +338,14 @@ pair<vector<int>, int> search(const vector<vector<int>> & connection)
 				feasible_color = color;
 				feasible_color_count = cur_color_count;
 
+				save_connection("cpp_output.txt", feasible_color_count, feasible_color);
+
 				color = remove_color(feasible_color, feasible_color_count);
 				break;
 			}
 
 			++retry_count;
-			if(retry_count >= RETRY_LIMIT)
+			if(retry_count >= retry_limit)
 			{
 				 return make_pair(feasible_color, feasible_color_count);
 			}
@@ -318,24 +355,18 @@ pair<vector<int>, int> search(const vector<vector<int>> & connection)
 		}
 	}
 
-	return make_pair(feasible_color, feasible_color_count);
+	return make_tuple(feasible_color, feasible_color_count);
 }
 
-int main()
+Connection load_connection(const char * filename)
 {
-	// you can change these lines to try different input files
-	// when submit, make sure you input from python_input.txt
-	auto f = fopen("python_input.txt", "r");
-	//auto f = fopen("data/gc_1000_5", "r");
-	//auto f = fopen("data/gc_250_9", "r");
-	//auto f = fopen("data/gc_4_1", "r");
-	assert(f);
+	auto f = fopen(filename, "r");
 
 	int node_count, edge_count;
 	assert(fscanf(f, "%d %d", &node_count, &edge_count) == 2);
 	printf("node : %d, edge : %d\n", node_count, edge_count);
 
-	vector<vector<int>> connection(node_count);
+	auto connection = Connection(node_count);
 	for (auto i = 0; i < edge_count; ++i)
 	{
 		int vs, ve;
@@ -349,24 +380,28 @@ int main()
 
 	fclose(f);
 
+	return connection;
+}
+int main()
+{
+	// you can change these lines to try different input files
+	// when submit, make sure you input from cpp_input.txt
+
+	auto connection = load_connection("cpp_input.txt");
+	// auto connection = load_connection("data/gc_50_3");
+	// auto connection = load_connection("data/gc_70_7");
+	// auto connection = load_connection("data/gc_100_5");
+	// auto connection = load_connection("data/gc_250_9");
+	// auto connection = load_connection("data/gc_500_1");
+	// auto connection = load_connection("data/gc_1000_5");
+
 	auto result = search(connection);
-	auto feasible_color = result.first;
-	auto feasible_color_count = result.second;
+	auto feasible_color = get<0>(result);
+	auto feasible_color_count = get<1>(result);
 
 	printf("final result:\n");
 	printf("%d %d\n", feasible_color_count, 0);
-	print_color(feasible_color);
-
-	// write the output to cpp_output.txt
-	// the solver.py will read result from this file
-	auto ff = fopen("cpp_output.txt", "w");
-	fprintf(ff, "%d\n", feasible_color_count);
-	for(size_t i = 0; i < feasible_color.size(); ++i)
-	{
-		fprintf(ff, "%d", feasible_color[i]);
-		if(i + 1 == feasible_color.size()) fprintf(ff, "\n");
-		else fprintf(ff, " ");
-	}
+	print_vec(feasible_color);
 
 	return 0;
 }

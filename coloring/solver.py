@@ -19,7 +19,7 @@ def solve_it(input_data):
         parts = line.split()
         edges.append((int(parts[0]), int(parts[1])))
     
-    with open('python_input.txt', mode='w') as f:
+    with open('cpp_input.txt', mode='w') as f:
         line = str(node_count) + ' ' + str(edge_count) + '\n'
         f.write(line)
         for a, b in edges:
