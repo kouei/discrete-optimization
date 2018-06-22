@@ -8,3 +8,4 @@ My solutions for the assignments of the Coursera course [Discrete Optimization](
 | :------------------ |:----------------|
 | Knapsack            | knapsack        |
 | Graph Coloring      | coloring        |
+| Traveling Salesman  | tsp             |
