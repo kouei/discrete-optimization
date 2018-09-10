@@ -67,14 +67,8 @@ tuple<int, vector<int>> search(const vector<Item> & items,  int capacity)
 	stack.push_back(make_tuple(start_value, start_capacity, start_expectation, start_taken, start_pos));
 	while(!stack.empty())
 	{
-		auto top_elem = stack.back();
+		auto [cur_value, cur_capacity, cur_expectation, cur_taken, cur_pos] = stack.back();
 		stack.pop_back();
-
-		auto cur_value = get<0>(top_elem);
-		auto cur_capacity = get<1>(top_elem);
-		auto cur_expectation = get<2>(top_elem);
-		auto cur_taken = get<3>(top_elem);
-		auto cur_pos = get<4>(top_elem);
 
 		// if left capacity is not enough, then backtrack
 		if(cur_capacity < 0) continue;
@@ -115,25 +109,13 @@ tuple<int, vector<int>> search(const vector<Item> & items,  int capacity)
 }
 
 // print the content of a vector
-void print_vec(const vector<int> & vec, FILE * f = nullptr)
+void print_vec(const vector<int> & vec, FILE * f = stdout)
 {
-	if(f)
+	for(auto i = 0; i < vec.size(); ++i)
 	{
-		for(auto i = 0; i < vec.size(); ++i)
-		{
-			fprintf(f, "%d", vec[i]);
-			if(i + 1 == vec.size()) fprintf(f, "\n");
-			else fprintf(f, " ");
-		}
-	}
-	else
-	{
-		for(auto i = 0; i < vec.size(); ++i)
-		{
-			printf("%d", vec[i]);
-			if(i + 1 == vec.size()) printf("\n");
-			else printf(" ");
-		}
+		fprintf(f, "%d", vec[i]);
+		if(i + 1 == vec.size()) fprintf(f, "\n");
+		else fprintf(f, " ");
 	}
 }
 
@@ -175,23 +157,18 @@ int main(int argc, char * argv[])
 	// you can change this line to try different input
 	// but when submiting, makesure you are reading from python_input.txt
 	
-	 auto init = load_item("cpp_input.txt");
-	// auto init = load_item("data/ks_30_0");
+	//  auto init = load_item("cpp_input.txt");
+	auto [items, capacity] = load_item("data/ks_30_0");
 	// auto init = load_item("data/ks_50_0");
 	// auto init = load_item("data/ks_200_0");
 	// auto init = load_item("data/ks_400_0");
 	// auto init = load_item("data/ks_1000_0");
-	//auto init = load_item("data/ks_10000_0");
-
-	auto items = get<0>(init);
-	auto capacity = get<1>(init);
+	// auto init = load_item("data/ks_10000_0");
 
 	// sort the items, so that they are in value density decreasing order
 	sort(items.begin(), items.end());
 
-	auto result = search(items, capacity);
-	auto value = get<0>(result);
-	auto taken = get<1>(result);
+	auto [value, taken] = search(items, capacity);
 
 	printf("maximum value %d\n", value);
 	printf("taken vector:\n");

@@ -11,26 +11,14 @@ using namespace std;
 using Connection = vector<vector<int>>;
 
 // print color choice for every node
-void print_vec(const vector<int> & color, FILE * f = nullptr)
+void print_vec(const vector<int> & color, FILE * f = stdout)
 {
-	if(f)
+	for(auto i = 0; i < color.size(); ++i)
 	{
-		for(auto i = 0; i < color.size(); ++i)
-		{
-			fprintf(f, "%d", color[i]);
-			if(i + 1 == color.size()) fprintf(f, "\n");
-			else fprintf(f, " ");
-		}
-	}
-	else
-	{
-		for(auto i = 0; i < color.size(); ++i)
-		{
-			printf("%d", color[i]);
-			if(i + 1 == color.size()) printf("\n");
-			else printf(" ");
-		}
-		printf("\n");
+		fprintf(f, "%d", color[i]);
+		if(i + 1 == color.size()) fprintf(f, "\n");
+		//else fprintf(f, " ");
+		fprintf(f, " ");
 	}
 }
 
@@ -235,9 +223,7 @@ tuple<bool, int> is_feasible(const vector<vector<int>> & connection, vector<int>
 	auto step_limit = 50000;
 	auto step_count = 0;
 
-	auto violation_and_total_violation = init_violation(connection, color);
-	auto violation = get<0>(violation_and_total_violation);
-	auto total_violation = get<1>(violation_and_total_violation);
+	auto [violation, total_violation] = init_violation(connection, color);
 
 	// tabu hash table and tabu queue, they contain same data
 	// use hash table to accelerate retrieval, use queue to make the tabu list FIFO (First In First Out)
@@ -328,9 +314,7 @@ tuple<vector<int>, int> search(const Connection & connection)
 		auto retry_count = 0;
 		while(true)
 		{
-			auto result = is_feasible(connection, color, cur_color_count, tabu_limit);
-			auto feasible = get<0>(result);
-			auto step_count = get<1>(result);
+			auto [feasible, step_count] = is_feasible(connection, color, cur_color_count, tabu_limit);
 
 			if(feasible)
 			{
@@ -395,9 +379,7 @@ int main()
 	// auto connection = load_connection("data/gc_500_1");
 	// auto connection = load_connection("data/gc_1000_5");
 
-	auto result = search(connection);
-	auto feasible_color = get<0>(result);
-	auto feasible_color_count = get<1>(result);
+	auto [feasible_color, feasible_color_count] = search(connection);
 
 	printf("final result:\n");
 	printf("%d %d\n", feasible_color_count, 0);

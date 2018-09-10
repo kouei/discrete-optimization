@@ -84,26 +84,14 @@ struct Activate
     int ones;
 };
 
-void print_tour(const vector<Connection> & connection, FILE * f = nullptr)
+void print_tour(const vector<Connection> & connection, FILE * f = stdout)
 {
     auto node = 0;
-    if(f)
+    for(auto i = 0; i < connection.size(); ++i)
     {
-        for(auto i = 0; i < connection.size(); ++i)
-        {
-            fprintf(f, "%d", node);
-            fprintf(f, i + 1 == connection.size() ? "\n" : " ");
-            node = connection[node].out;
-        }
-    }
-    else
-    {
-        for(auto i = 0; i < connection.size(); ++i)
-        {
-            printf("%d", node);
-            printf(i + 1 == connection.size() ? "\n" : " ");
-            node = connection[node].out;
-        }
+        fprintf(f, "%d", node);
+        fprintf(f, i + 1 == connection.size() ? "\n" : " ");
+        node = connection[node].out;
     }
 }
 
@@ -395,13 +383,9 @@ vector<Connection> search(const vector<Connection> & connection, DistanceMatrix 
 
                 for(auto j = 0; j < t1_t2_candidate.size(); ++j)
                 {
-                    auto t1_t2 = t1_t2_candidate[j];
-                    auto t1 = get<0>(t1_t2);
-                    auto t2 = get<1>(t1_t2);
+                    auto [t1, t2] = t1_t2_candidate[j];
 
-                    auto t3_t4 = select_t3_t4(t1, t2, current_connection, distance_matrix, penalty, lambda);
-                    auto t3 = get<0>(t3_t4);
-                    auto t4 = get<1>(t3_t4);
+                    auto [t3, t4] = select_t3_t4(t1, t2, current_connection, distance_matrix, penalty, lambda);
 
                     if(t3 == -1)
                     {
