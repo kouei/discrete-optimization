@@ -3,7 +3,7 @@
   
 My solutions for the assignments of the Coursera course [Discrete Optimization](https://www.coursera.org/learn/discrete-optimization/home/info), all assignments are written in C++17 and Python.
 
-## Content
+### Content
 | Assignment          | Folder          |
 | :------------------ |:----------------|
 | Knapsack            | knapsack        |
