@@ -13,7 +13,7 @@ This will generate executable file `main`, then you can run `submit.py` to submi
 
 `$ python submit.py`
 
-## Optimization Strategy
+### Optimization Strategy
 
 * Local Search
 * Tabu Search
