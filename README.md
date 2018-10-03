@@ -4,6 +4,7 @@
 My solutions for the assignments of the Coursera course [Discrete Optimization](https://www.coursera.org/learn/discrete-optimization/home/info), all assignments are written in C++17 and Python.
 
 <br/>
+<br/>
 
 ### Content
 | Assignment          | Folder          | Score |
@@ -18,9 +19,6 @@ My solutions for the assignments of the Coursera course [Discrete Optimization](
 <br/>
 
 ### Visualization
-
-<br/>
-
 #### Graph Coloring - 100 Nodes
 ![coloring-visualization](visualization/coloring-visualization.png)
 

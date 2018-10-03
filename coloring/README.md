@@ -20,15 +20,18 @@ To submit, simply type:
 
 `submit.py` will read result from folder `best-result`.
 
+<br/>
+<br/>
+
 ### Optimization Strategy
 
 * Local Search
 * Tabu Search
 * Restart
 
-### Visualization
-
+<br/>
 <br/>
 
+### Visualization
 #### Graph Coloring - 100 Nodes
 ![coloring-visualization](../visualization/coloring-visualization.png)
