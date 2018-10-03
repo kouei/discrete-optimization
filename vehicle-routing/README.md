@@ -27,3 +27,10 @@ To submit, simply type:
 * Exchange
 * Cross
 * Guided Local Search
+
+### Visualization
+
+<br/>
+
+#### Vehicle Routing - 421 Customers / 41 Vehicles
+![vehicle-routing-visualization](../visualization/vehicle-routing-visualization.png)

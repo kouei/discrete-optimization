@@ -56,3 +56,10 @@ You can copy the content of `mip-output.txt` to the corresponding result file in
 
 * Guided Local Search
 * Mixed Integer Programming
+
+### Visualization
+
+<br/>
+
+#### Facility Location - 200 Facilities / 800 Customers
+![facility-location-visualization](../visualization/facility-location-visualization.png)

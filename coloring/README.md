@@ -25,3 +25,10 @@ To submit, simply type:
 * Local Search
 * Tabu Search
 * Restart
+
+### Visualization
+
+<br/>
+
+#### Graph Coloring - 100 Nodes
+![coloring-visualization](../visualization/coloring-visualization.png)
