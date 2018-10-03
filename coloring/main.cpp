@@ -16,8 +16,7 @@ auto print_vec(const vector<int> & color, FILE * f = stdout)
 	for(auto i = 0; i < color.size(); ++i)
 	{
 		fprintf(f, "%d", color[i]);
-		if(i + 1 == color.size()) fprintf(f, "\n");
-		else fprintf(f, " ");
+		fprintf(f, i + 1 == color.size() ? "\n" : " ");
 	}
 }
 

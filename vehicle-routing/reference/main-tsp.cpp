@@ -84,7 +84,7 @@ struct Activate
     int ones;
 };
 
-auto print_tour(const vector<Connection> & connection, FILE * f = stdout)
+void print_tour(const vector<Connection> & connection, FILE * f = stdout)
 {
     auto node = 0;
     for(auto i = 0; i < connection.size(); ++i)
@@ -95,7 +95,7 @@ auto print_tour(const vector<Connection> & connection, FILE * f = stdout)
     }
 }
 
-auto get_distance_matrix(const vector<Node> & node_vec)
+DistanceMatrix get_distance_matrix(const vector<Node> & node_vec)
 {
     auto square = [](double x) { return x * x; };
     auto distance = [square](Node a, Node b) { return sqrt(square(a.x - b.x) + square(a.y - b.y)); };
@@ -104,7 +104,7 @@ auto get_distance_matrix(const vector<Node> & node_vec)
 }
 
 
-auto init_connection(int node_count, DistanceMatrix distance_matrix)
+vector<Connection> init_connection(int node_count, DistanceMatrix distance_matrix)
 {
     vector<int> tour;
     for(auto i = 0; i < node_count; ++i)
@@ -160,7 +160,7 @@ T random_sample(const vector<T> & vec)
 // after swapping, the two edges are: t1 -> t3, t2 -> t4
 
 
-auto select_t3_t4(int t1, int t2, const vector<Connection> & connection, DistanceMatrix distance_matrix, 
+tuple<int, int> select_t3_t4(int t1, int t2, const vector<Connection> & connection, DistanceMatrix distance_matrix, 
                             const Penalty & penalty, double lambda)
 {
     auto max_gain = -(numeric_limits<double>::max)();
@@ -210,7 +210,7 @@ auto select_t3_t4(int t1, int t2, const vector<Connection> & connection, Distanc
 
 
 
-auto swap_edge(int t1, int t2, int t3, int t4, vector<Connection> & connection, DistanceMatrix distance_matrix, 
+void swap_edge(int t1, int t2, int t3, int t4, vector<Connection> & connection, DistanceMatrix distance_matrix, 
                 const Penalty & penalty, double & distance, double & augmented_distance, double lambda)
 {
     auto cur_node = t2;
@@ -251,7 +251,7 @@ auto swap_edge(int t1, int t2, int t3, int t4, vector<Connection> & connection, 
     augmented_distance -= gain;
 }
 
-auto add_penalty(const vector<Connection> & connection, DistanceMatrix distance_matrix, Penalty & penalty, Activate & activate, 
+void add_penalty(const vector<Connection> & connection, DistanceMatrix distance_matrix, Penalty & penalty, Activate & activate, 
                     double & augmented_distance, double lambda)
 {
     auto max_util = -(numeric_limits<double>::max)();
@@ -288,7 +288,7 @@ auto add_penalty(const vector<Connection> & connection, DistanceMatrix distance_
     }
 }
 
-auto total_distance(const vector<Connection> & connection, DistanceMatrix distance_matrix)
+double total_distance(const vector<Connection> & connection, DistanceMatrix distance_matrix)
 {
     auto dis = 0.0;
     for(auto i = 0; i < connection.size(); ++i)
@@ -299,7 +299,7 @@ auto total_distance(const vector<Connection> & connection, DistanceMatrix distan
     return dis;
 }
 
-auto total_augmented_distance(const vector<Connection> & connection, DistanceMatrix distance_matrix, const Penalty & penalty, double lambda)
+double total_augmented_distance(const vector<Connection> & connection, DistanceMatrix distance_matrix, const Penalty & penalty, double lambda)
 {
     auto augmented_dis = 0.0;
     for(auto i = 0; i < connection.size(); ++i)
@@ -314,17 +314,17 @@ auto total_augmented_distance(const vector<Connection> & connection, DistanceMat
 }
 
 
-auto save_result(const char * filename, double distance, const vector<Connection> & connection)
+void save_result(const char * filename, double distance, const vector<Connection> & connection)
 {
     auto f = fopen(filename, "w");
 
-    fprintf(f, "%lf 0\n", distance);
+    fprintf(f, "%lf\n", distance);
     print_tour(connection, f);
 
     fclose(f);
 }
 
-auto load_node(const char * filename)
+vector<Node> load_node(const char * filename)
 {
     auto f = fopen(filename, "r");
 
@@ -343,18 +343,18 @@ auto load_node(const char * filename)
     return node_vec;
 }
 
-auto init_lambda(const vector<Connection> & connection, DistanceMatrix distance_matrix, double alpha)
+double init_lambda(const vector<Connection> & connection, DistanceMatrix distance_matrix, double alpha)
 {
     return alpha * total_distance(connection, distance_matrix) / connection.size();
 }
 
-auto search(const vector<Connection> & connection, DistanceMatrix distance_matrix)
+vector<Connection> search(const vector<Connection> & connection, DistanceMatrix distance_matrix)
 {
     auto step_limit = 1000000;
 
     auto penalty = Penalty(connection.size());
-    auto alpha = 0.1;
-    auto lambda = 0.0;
+    auto alpha = 0.5;
+    auto lambda = init_lambda(connection, distance_matrix, alpha);
 
     auto activate = Activate(connection.size());
 
@@ -416,27 +416,24 @@ auto search(const vector<Connection> & connection, DistanceMatrix distance_matri
                 }
             }
         }
-        if(lambda == 0.0) lambda = init_lambda(connection, distance_matrix, alpha);
         add_penalty(current_connection, distance_matrix, penalty, activate, current_augmented_distance, lambda);
     }
 
-    save_result("cpp_output.txt", best_distance, best_connection);
     return best_connection;
 }
 
 
 
 
-int main(int argc, char * argv[])
+int main()
 {
-    if(argc < 2)
-    {
-        printf("Usage: ./main <data-file>\n");
-        printf("Example: ./main data/tsp_51_1\n");
-        exit(-1);
-    }
-
-    auto node_vec = load_node(argv[1]);
+    auto node_vec = load_node("cpp_input.txt");
+    // auto node_vec = load_node("data/tsp_51_1");
+    // auto node_vec = load_node("data/tsp_100_3");
+    // auto node_vec = load_node("data/tsp_200_2");
+    // auto node_vec = load_node("data/tsp_574_1");
+    // auto node_vec = load_node("data/tsp_1889_1");
+    // auto node_vec = load_node("data/tsp_33810_1");
 
     auto distance_matrix = get_distance_matrix(node_vec);
     auto connection = init_connection(node_vec.size(), distance_matrix);
