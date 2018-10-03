@@ -20,6 +20,9 @@ To submit, simply type:
 
 `submit.py` will read result from folder `best-result`.
 
+<br/>
+<br/>
+
 ### Optimization Strategy
 
 * Prune and Bound

@@ -20,6 +20,9 @@ To submit, simply type:
 
 `submit.py` will read result from folder `best-result`.
 
+<br/>
+<br/>
+
 ### Optimization Strategy
 
 * 2-opt
@@ -28,9 +31,9 @@ To submit, simply type:
 * Cross
 * Guided Local Search
 
-### Visualization
-
+<br/>
 <br/>
 
+### Visualization
 #### Vehicle Routing - 421 Customers / 41 Vehicles
 ![vehicle-routing-visualization](../visualization/vehicle-routing-visualization.png)

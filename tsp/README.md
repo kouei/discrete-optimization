@@ -20,15 +20,18 @@ To submit, simply type:
 
 `submit.py` will read result from folder `best-result`.
 
+<br/>
+<br/>
+
 ### Optimization Strategy
 
 * 2-opt
 * Guided Local Search
 * Fast Local Search
 
-### Visualization
-
+<br/>
 <br/>
 
+### Visualization
 #### Traveling Salesman - 574 Customers
 ![tsp-visualization](../visualization/tsp-visualization.png)

@@ -52,14 +52,17 @@ The refined solution will be stored in the file `mip-output.txt`.
 
 You can copy the content of `mip-output.txt` to the corresponding result file in folder `best-result/`, the `solver.py` will read result from this folder and submit it.
 
+<br/>
+<br/>
+
 ### Optimization Strategy
 
 * Guided Local Search
 * Mixed Integer Programming
 
-### Visualization
-
+<br/>
 <br/>
 
+### Visualization
 #### Facility Location - 200 Facilities / 800 Customers
 ![facility-location-visualization](../visualization/facility-location-visualization.png)
