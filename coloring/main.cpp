@@ -11,19 +11,18 @@ using namespace std;
 using Connection = vector<vector<int>>;
 
 // print color choice for every node
-void print_vec(const vector<int> & color, FILE * f = stdout)
+auto print_vec(const vector<int> & color, FILE * f = stdout)
 {
 	for(auto i = 0; i < color.size(); ++i)
 	{
 		fprintf(f, "%d", color[i]);
 		if(i + 1 == color.size()) fprintf(f, "\n");
-		//else fprintf(f, " ");
-		fprintf(f, " ");
+		else fprintf(f, " ");
 	}
 }
 
 // print neighbor connection of every node
-void print_connection(const Connection & connection)
+auto print_connection(const Connection & connection)
 {
 	for(auto & vec : connection)
 	{
@@ -45,7 +44,7 @@ T random_sample(const vector<T> & vec)
 }
 
 // random sample from a range
-int random_sample(int start, int end)
+auto random_sample(int start, int end)
 {
 	assert(start <= end);
 
@@ -87,7 +86,7 @@ struct Tabu
 };
 
 // select next node to change color
-int select_next_node(const vector<int> & violation, const vector<int> & color, const Tabu & tabu)
+auto select_next_node(const vector<int> & violation, const vector<int> & color, const Tabu & tabu)
 {
 	auto max_violation = (numeric_limits<int>::min)();
 	vector<int> max_violation_node;
@@ -122,7 +121,7 @@ int select_next_node(const vector<int> & violation, const vector<int> & color, c
 
 
 // change the color of a node
-void change_color(int node, const vector<int> & node_neighbor, vector<int> & color, int total_color_count, 
+auto change_color(int node, const vector<int> & node_neighbor, vector<int> & color, int total_color_count, 
 					vector<int> & violation, int & total_violation)
 {
 	// count the color distribution of neighbor nodes
@@ -184,7 +183,7 @@ void change_color(int node, const vector<int> & node_neighbor, vector<int> & col
 }
 
 // reinitialize color choice for every node
-vector<int> init_color(const vector<int> & color, int total_color_count)
+auto init_color(const vector<int> & color, int total_color_count)
 {
 	vector<int> new_color(color.size());
 	for(auto & c : new_color)
@@ -197,7 +196,7 @@ vector<int> init_color(const vector<int> & color, int total_color_count)
 
 
 // count violation for every node and count total violation
-tuple<vector<int>, int> init_violation(const vector<vector<int>> & connection, const vector<int> & color)
+auto init_violation(const vector<vector<int>> & connection, const vector<int> & color)
 {
 	vector<int> violation;
 	int total_violation = 0;
@@ -216,7 +215,7 @@ tuple<vector<int>, int> init_violation(const vector<vector<int>> & connection, c
 }
 
 // check feasibility of current number of color
-tuple<bool, int> is_feasible(const vector<vector<int>> & connection, vector<int> & color, int total_color_count, int tabu_size)
+auto is_feasible(const vector<vector<int>> & connection, vector<int> & color, int total_color_count, int tabu_size)
 {
 	// maximum step to try
 	// one step means change the color of a node
@@ -261,7 +260,7 @@ tuple<bool, int> is_feasible(const vector<vector<int>> & connection, vector<int>
 // 6 1 4 2 5 8 0 3 5 7 5 8 0 4
 // then for each color equals to 5 we set it to a random color from 0 ~ 8:
 // 6 1 4 2 3 8 0 3 1 7 4 8 0 4
-vector<int> remove_color(const vector<int> & color, int total_color_count)
+auto remove_color(const vector<int> & color, int total_color_count)
 {
 	static default_random_engine generator(time(nullptr));
 	uniform_int_distribution<int> distribution(0, total_color_count - 2);
@@ -281,12 +280,12 @@ vector<int> remove_color(const vector<int> & color, int total_color_count)
 }
 
 
-void save_connection(const char * filename, int feasible_color_count, const vector<int> & feasible_color)
+auto save_connection(const char * filename, int feasible_color_count, const vector<int> & feasible_color)
 {
 	// write the output to cpp_output.txt
 	// the solver.py will read result from this file
 	auto f = fopen(filename, "w");
-	fprintf(f, "%d\n", feasible_color_count);
+	fprintf(f, "%d 0\n", feasible_color_count);
 	print_vec(feasible_color, f);
 	fclose(f);
 }
@@ -294,7 +293,7 @@ void save_connection(const char * filename, int feasible_color_count, const vect
 
 // search the minimum color for a graph
 // return the color choice of every node and the total number of color
-tuple<vector<int>, int> search(const Connection & connection)
+auto search(const Connection & connection)
 {
 	auto color = vector<int>(connection.size());
 	auto total_color_count = static_cast<int>(color.size());
@@ -331,7 +330,7 @@ tuple<vector<int>, int> search(const Connection & connection)
 			++retry_count;
 			if(retry_count >= retry_limit)
 			{
-				 return make_pair(feasible_color, feasible_color_count);
+				 return make_tuple(feasible_color, feasible_color_count);
 			}
 
 			printf("[Color %4d][Retry %5d] reinitializing color\n", cur_color_count, retry_count);
@@ -342,7 +341,7 @@ tuple<vector<int>, int> search(const Connection & connection)
 	return make_tuple(feasible_color, feasible_color_count);
 }
 
-Connection load_connection(const char * filename)
+auto load_connection(const char * filename)
 {
 	auto f = fopen(filename, "r");
 
@@ -366,23 +365,19 @@ Connection load_connection(const char * filename)
 
 	return connection;
 }
-int main()
+int main(int argc, char * argv[])
 {
-	// you can change these lines to try different input files
-	// when submit, make sure you input from cpp_input.txt
-
-	auto connection = load_connection("cpp_input.txt");
-	// auto connection = load_connection("data/gc_50_3");
-	// auto connection = load_connection("data/gc_70_7");
-	// auto connection = load_connection("data/gc_100_5");
-	// auto connection = load_connection("data/gc_250_9");
-	// auto connection = load_connection("data/gc_500_1");
-	// auto connection = load_connection("data/gc_1000_5");
+	if(argc < 2)
+    {
+        printf("Usage: ./main <data-file>\n");
+        printf("Example: ./main data/gc_50_3\n");
+        exit(-1);
+    }
+	auto connection = load_connection(argv[1]);
 
 	auto [feasible_color, feasible_color_count] = search(connection);
 
-	printf("final result:\n");
-	printf("%d %d\n", feasible_color_count, 0);
+	printf("%d 0\n", feasible_color_count);
 	print_vec(feasible_color);
 
 	return 0;

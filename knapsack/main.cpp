@@ -22,7 +22,7 @@ struct Item
 };
 
 // get the max value expectation from current capacity and current undecided item
-double get_expectation(const vector<Item> & items, int capacity, int start)
+auto get_expectation(const vector<Item> & items, int capacity, int start)
 {
 	auto expectation = 0.0;
 	for(auto i = start; i < items.size(); ++i)
@@ -46,7 +46,7 @@ double get_expectation(const vector<Item> & items, int capacity, int start)
 }
 
 // find max value and the take/no-take choice for each item
-tuple<int, vector<int>> search(const vector<Item> & items,  int capacity)
+auto search(const vector<Item> & items,  int capacity)
 {
 	auto max_value = 0.0;
 	auto max_taken = vector<int>(items.size(), 0);
@@ -108,11 +108,11 @@ tuple<int, vector<int>> search(const vector<Item> & items,  int capacity)
         
         stack.push_back(make_tuple(take_value, take_capacity, take_expectation, take_taken, cur_pos + 1));
 	}
-	return make_tuple(max_value, max_taken);
+	return make_tuple(static_cast<int>(max_value), max_taken);
 }
 
 // print the content of a vector
-void print_vec(const vector<int> & vec, FILE * f = stdout)
+auto print_vec(const vector<int> & vec, FILE * f = stdout)
 {
 	for(auto i = 0; i < vec.size(); ++i)
 	{
@@ -122,7 +122,7 @@ void print_vec(const vector<int> & vec, FILE * f = stdout)
 	}
 }
 
-tuple<vector<Item>, int> load_item(const char * filename)
+auto load_item(const char * filename)
 {
 	auto f = fopen(filename, "r");
 	assert(f);
@@ -144,7 +144,7 @@ tuple<vector<Item>, int> load_item(const char * filename)
 	return make_tuple(items, capacity);
 }
 
-void save_item(const char * filename, int value, const vector<int> & taken)
+auto save_item(const char * filename, int value, const vector<int> & taken)
 {
 	// write result to cpp_output.txt, so that solver.py can read result from it
 	auto f = fopen(filename, "w");
@@ -174,8 +174,7 @@ int main(int argc, char * argv[])
 
 	auto [value, taken] = search(items, capacity);
 
-	printf("maximum value %d\n", value);
-	printf("taken vector:\n");
+	printf("%d 1\n", value);
 	print_vec(taken);
 
 	save_item("cpp_output.txt", value, taken);
