@@ -1,3 +1,6 @@
+// Knapsack Problem
+// This code solves the 0/1 Knapsack Problem with Branch and Bound method
+
 #include<cstdio>
 #include<vector>
 #include<cassert>
@@ -147,23 +150,24 @@ void save_item(const char * filename, int value, const vector<int> & taken)
 	auto f = fopen(filename, "w");
 	assert(f);
 
-	fprintf(f, "%d\n", value);
+	fprintf(f, "%d 1\n", value);
 	print_vec(taken, f);
 	fclose(f);
 }
 
 int main(int argc, char * argv[])
 {
+    if(argc < 2)
+    {
+        printf("Usage: ./main <data-file>\n");
+        printf("Example: ./main data/ks_30_0\n");
+        exit(-1);
+    }
+
 	// you can change this line to try different input
 	// but when submiting, makesure you are reading from python_input.txt
 	
-	//  auto init = load_item("cpp_input.txt");
-	auto [items, capacity] = load_item("data/ks_30_0");
-	// auto init = load_item("data/ks_50_0");
-	// auto init = load_item("data/ks_200_0");
-	// auto init = load_item("data/ks_400_0");
-	// auto init = load_item("data/ks_1000_0");
-	// auto init = load_item("data/ks_10000_0");
+	auto [items, capacity] = load_item(argv[1]);
 
 	// sort the items, so that they are in value density decreasing order
 	sort(items.begin(), items.end());

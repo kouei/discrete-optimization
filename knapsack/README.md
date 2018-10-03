@@ -9,9 +9,17 @@ To run the program you need to compile `main.cpp`, here I use choose as my compi
 
 `$ clang++ main.cpp -o main -std=c++17 -O2 -Wall`
 
-This will generate executable file `main`, then you can run `submit.py` to submit the result:
+This will generate executable file `main`, then if you want to solve problem `ks_30_0` you can type:
+
+`$ ./main data/ks_30_0`
+
+The solution will be written to `cpp_output.txt`, you can copy its content to the corresponding file in folder `best-result`.
+
+To submit, simply type:
 
 `$ python submit.py`
+
+`submit.py` will read result from folder `best-result`.
 
 ### Optimization Strategy
 

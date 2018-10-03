@@ -419,6 +419,7 @@ vector<Connection> search(const vector<Connection> & connection, DistanceMatrix 
         add_penalty(current_connection, distance_matrix, penalty, activate, current_augmented_distance, lambda);
     }
 
+    save_result("cpp_output.txt", best_distance, best_connection);
     return best_connection;
 }
 

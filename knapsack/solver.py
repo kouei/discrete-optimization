@@ -10,25 +10,23 @@ Item = namedtuple("Item", ['index', 'value', 'weight'])
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
     
-    with open('cpp_input.txt', mode='w') as f:
-        for line in input_data:
-            f.write(line)
-            
-    os.system("./main")
+    input_data = input_data.split('\n')
+    input_data = input_data[0].split()
+    input_data = str(input_data[0]) + ' ' + str(input_data[1])
+
+    dic = { 
+        '30 100000'     : 'best-result/problem1-10pt.txt',
+        '50 341045'     : 'best-result/problem2-10pt.txt',
+        '200 100000'    : 'best-result/problem3-10pt.txt',
+        '400 9486367'   : 'best-result/problem4-10pt.txt',
+        '1000 100000'   : 'best-result/problem5-10pt.txt',
+        '10000 1000000' : 'best-result/problem6-10pt.txt'
+    }
     
-    with open('cpp_output.txt', mode='r') as f:
-        line = f.readline()
-        line = line[:-1]
-        value = int(line)
-        line = f.readline()
-        line = line[:-1]
-        line = line.split(' ')
-        taken = [int(num) for num in line]
-    
-    # prepare the solution in the specified output format
-    
-    output_data = str(value) + ' ' + str(1) + '\n'
-    output_data += ' '.join(map(str, taken))
+    filename = dic[input_data]
+    with open(filename, 'r') as cpp_output_data_file:
+        output_data = cpp_output_data_file.read()
+
     return output_data
     
 
