@@ -7,13 +7,13 @@ My solutions for the assignments of the Coursera course [Discrete Optimization](
 <br/>
 
 ### Content
-| Assignment          | Folder          | Score |
-| :------------------ |:----------------|:------|
-| Knapsack            | knapsack        | 60/60 |
-| Graph Coloring      | coloring        | 60/60 |
-| Traveling Salesman  | tsp             | 60/60 |
-| Facility Location   | facility        | 80/80 |
-| Vehicle Routing     | vehicle-routing | 60/60 |
+| Assignment                            | Score |
+| :------------------------------------ |:------|
+| [Knapsack](knapsack)                  | 60/60 |
+| [Graph Coloring](coloring)            | 60/60 |
+| [Traveling Salesman](tsp)             | 60/60 |
+| [Facility Location](facility)         | 80/80 |
+| [Vehicle Routing](vehicle-routing)    | 60/60 |
 
 <br/>
 <br/>
