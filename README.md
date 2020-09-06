@@ -18,6 +18,7 @@ My solutions for the assignments of the Coursera course [Discrete Optimization](
 <br/>
 <br/>
 
+
 ### Visualization
 #### Graph Coloring - 100 Nodes
 ![coloring-visualization](visualization/coloring-visualization.png)
